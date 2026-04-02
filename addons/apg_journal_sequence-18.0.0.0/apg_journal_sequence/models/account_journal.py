@@ -21,7 +21,7 @@ class AccountJournal(models.Model):
                                          copy=False)
     refund_sequence_number_next = fields.Integer(string='Credit Notes Next Number',
                                                  help='The next sequence number will be used for the next'
-                                                      'credit note.',
+                                                      ' credit note.',
                                                  compute='_compute_refund_seq_number_next',
                                                  inverse='_inverse_refund_seq_number_next')
 
@@ -87,17 +87,18 @@ class AccountJournal(models.Model):
                     % (journal.refund_sequence_id.display_name, journal.display_name)
                 )
 
-    @api.model
-    def create(self, vals):
-        if not vals.get("sequence_id"):
-            vals["sequence_id"] = self._create_sequence(vals).id
-        if (
-                vals.get("type") in ("sale", "purchase")
-                and vals.get("refund_sequence")
-                and not vals.get("refund_sequence_id")
-        ):
-            vals["refund_sequence_id"] = self._create_sequence(vals, refund=True).id
-        return super().create(vals)
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            if not vals.get("sequence_id"):
+                vals["sequence_id"] = self._create_sequence(vals).id
+            if (
+                    vals.get("type") in ("sale", "purchase")
+                    and vals.get("refund_sequence")
+                    and not vals.get("refund_sequence_id")
+            ):
+                vals["refund_sequence_id"] = self._create_sequence(vals, refund=True).id
+        return super(AccountJournal, self).create(vals_list)
 
     @api.model
     def _prepare_sequence(self, vals, refund=False):
@@ -118,5 +119,3 @@ class AccountJournal(models.Model):
     def _create_sequence(self, vals, refund=False):
         seq_vals = self._prepare_sequence(vals, refund=refund)
         return self.env["ir.sequence"].sudo().create(seq_vals)
-
-
