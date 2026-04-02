@@ -2,7 +2,7 @@
 
 {
     'name': 'Journal Sequence',
-    'version': '18.0.0.0',
+    'version': '19.0.0.0',
     'category': 'Accounting',
     'summary': 'Assign distinct and independent numbering sequences to each journal.',
     'description': """
